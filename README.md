@@ -54,4 +54,4 @@ PASS
 ok  	github.com/eudore/web-framework-benchmark	53.981s
 ```
 
-[1]: https://github.com/eudore/web-framework-benchmark
+[1]: https://github.com/vishr/web-framework-benchmark
