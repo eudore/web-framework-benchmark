@@ -5,8 +5,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
+	"github.com/dinever/golf"
 	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
+	"github.com/devfeel/dotweb"
+	"github.com/kataras/iris"
+	iriscontext "github.com/kataras/iris/context"
+	"github.com/astaxie/beego"
+	beegocontext "github.com/astaxie/beego/context"
+	"github.com/twiglab/twig"
+	"github.com/eudore/eudore"
 )
 
 type (
@@ -510,8 +518,6 @@ var (
 	apis = [][]*Route{githubAPI, gplusAPI, parseAPI}
 )
 
-func testRoutes() {
-}
 
 func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 	b.ReportAllocs()
@@ -528,6 +534,55 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 	}
 }
 
+// golf
+func loadGolfRoutes(app *golf.Application, routes []*Route) {
+	for _, r := range routes {
+		switch r.Method {
+		case "GET":
+			app.Get(r.Path, golgHandler(r.Method, r.Path))
+		case "POST":
+			app.Post(r.Path, golgHandler(r.Method, r.Path))
+		case "PATCH":
+			app.Patch(r.Path, golgHandler(r.Method, r.Path))
+		case "PUT":
+			app.Put(r.Path, golgHandler(r.Method, r.Path))
+		case "DELETE":
+			app.Delete(r.Path, golgHandler(r.Method, r.Path))
+		}
+	}
+}
+
+func golgHandler(method, path string) golf.HandlerFunc {
+	return func(ctx *golf.Context) {
+		ctx.Send("OK")
+	}
+}
+
+func BenchmarkGolfStatic(b *testing.B) {
+	app := golf.New()
+	loadGolfRoutes(app, static)
+	benchmarkRoutes(b, app, static)
+}
+
+func BenchmarkGolfGitHubAPI(b *testing.B) {
+	app := golf.New()
+	loadGolfRoutes(app, githubAPI)
+	benchmarkRoutes(b, app, githubAPI)
+}
+
+func BenchmarkGolfGplusAPI(b *testing.B) {
+	app := golf.New()
+	loadGolfRoutes(app, gplusAPI)
+	benchmarkRoutes(b, app, gplusAPI)
+}
+
+func BenchmarkGolfParseAPI(b *testing.B) {
+	app := golf.New()
+	loadGolfRoutes(app, parseAPI)
+	benchmarkRoutes(b, app, parseAPI)
+}
+
+// echo
 func loadEchoRoutes(e *echo.Echo, routes []*Route) {
 	for _, r := range routes {
 		switch r.Method {
@@ -575,6 +630,7 @@ func BenchmarkEchoParseAPI(b *testing.B) {
 	benchmarkRoutes(b, e, parseAPI)
 }
 
+// gin
 func loadGinRoutes(g *gin.Engine, routes []*Route) {
 	for _, r := range routes {
 		switch r.Method {
@@ -624,4 +680,204 @@ func BenchmarkGinParseAPI(b *testing.B) {
 	g := gin.New()
 	loadGinRoutes(g, parseAPI)
 	benchmarkRoutes(b, g, parseAPI)
+}
+
+// dotweb
+func loadDotwebRoute(app *dotweb.DotWeb, routes []*Route) {
+	router := app.HttpServer.Router()
+	for _, r := range routes {
+		router.RegisterRoute(r.Method, r.Path, dotwebHandler(r.Method, r.Path))
+	}
+}
+
+func dotwebHandler(method, path string) dotweb.HttpHandle {
+	return func(ctx dotweb.Context) error {
+		return ctx.WriteString("OK")
+	}
+}
+
+func BenchmarkDotwebStatic(b *testing.B) {
+	app := dotweb.New()
+	loadDotwebRoute(app, static)
+	benchmarkRoutes(b, app.HttpServer, static)
+}
+
+func BenchmarkDotwebGitHubAPI(b *testing.B) {
+	app := dotweb.New()
+	loadDotwebRoute(app, githubAPI)
+	benchmarkRoutes(b, app.HttpServer, githubAPI)
+}
+
+func BenchmarkDotwebGplusAPI(b *testing.B) {
+	app := dotweb.New()
+	loadDotwebRoute(app, gplusAPI)
+	benchmarkRoutes(b, app.HttpServer, gplusAPI)
+}
+
+func BenchmarkDotwebParseAPI(b *testing.B) {
+	app := dotweb.New()
+	loadDotwebRoute(app, parseAPI)
+	benchmarkRoutes(b, app.HttpServer, parseAPI)
+}
+
+
+// iris
+func loadIrisRoutes(app *iris.Application, routes []*Route) {
+	for _, r := range routes {
+		app.Handle(r.Method, r.Path, irisHandler(r.Method, r.Path))
+	}
+}
+
+func irisHandler(method, path string) iriscontext.Handler {
+	return func(ctx iriscontext.Context) {
+		ctx.Text("OK")
+	}
+}
+
+/*
+func BenchmarkIrisStatic(b *testing.B) {
+	app := iris.Default()
+	loadIrisRoutes(app, static)
+	benchmarkRoutes(b, app, static)
+}
+
+func BenchmarkIrisGitHubAPI(b *testing.B) {
+	app := iris.Default()
+	loadIrisRoutes(app, githubAPI)
+	benchmarkRoutes(b, app, githubAPI)
+}
+
+func BenchmarkIrisGplusAPI(b *testing.B) {
+	app := iris.Default()
+	loadIrisRoutes(app, gplusAPI)
+	benchmarkRoutes(b, app, gplusAPI)
+}
+
+func BenchmarkIrisParseAPI(b *testing.B) {
+	app := iris.Default()
+	loadIrisRoutes(app, parseAPI)
+	benchmarkRoutes(b, app, parseAPI)
+}*/
+
+// beego
+func loadBeegoRoutes(app *beego.App, routes []*Route) {
+	for _, r := range routes {
+		switch r.Method {
+		case "GET":
+			app.Handlers.Get(r.Path, beegoHandler(r.Method, r.Path))
+		case "POST":
+			app.Handlers.Post(r.Path, beegoHandler(r.Method, r.Path))
+		case "PATCH":
+			app.Handlers.Patch(r.Path, beegoHandler(r.Method, r.Path))
+		case "PUT":
+			app.Handlers.Put(r.Path, beegoHandler(r.Method, r.Path))
+		case "DELETE":
+			app.Handlers.Delete(r.Path, beegoHandler(r.Method, r.Path))
+		}
+	}
+}
+
+func beegoHandler(method, path string) beego.FilterFunc {
+	return func(ctx *beegocontext.Context) {
+		ctx.Output.Body([]byte("OK"))
+	}
+}
+
+func BenchmarkBeegoStatic(b *testing.B) {
+	beego.SetLevel(beego.LevelEmergency)
+	app := beego.NewApp()
+	loadBeegoRoutes(app, static)
+	benchmarkRoutes(b, app.Handlers, static)
+}
+
+func BenchmarkBeegoGitHubAPI(b *testing.B) {
+	app := beego.NewApp()
+	loadBeegoRoutes(app, githubAPI)
+	benchmarkRoutes(b, app.Handlers, githubAPI)
+}
+
+func BenchmarkBeegoGplusAPI(b *testing.B) {
+	app := beego.NewApp()
+	loadBeegoRoutes(app, gplusAPI)
+	benchmarkRoutes(b, app.Handlers, gplusAPI)
+}
+
+func BenchmarkBeegoParseAPI(b *testing.B) {
+	app := beego.NewApp()
+	loadBeegoRoutes(app, parseAPI)
+	benchmarkRoutes(b, app.Handlers, parseAPI)
+}
+
+// twig
+func loadTwigRoutes(app twig.Register, routes []*Route) {
+	for _, r := range routes {
+		app.AddHandler(r.Method, r.Path, twigHandler(r.Method, r.Path))
+	}
+}
+
+func twigHandler(method, path string) twig.HandlerFunc {
+	return	func(ctx twig.Ctx) error {
+		return ctx.String(200, "OK")
+	}
+}
+
+func BenchmarkTwigStatic(b *testing.B) {
+	app := twig.TODO()
+	loadTwigRoutes(app.Config().Register, static)
+	benchmarkRoutes(b, app, static)
+}
+
+func BenchmarkTwigGitHubAPI(b *testing.B) {
+	app := twig.TODO()
+	loadTwigRoutes(app.Config().Register, githubAPI)
+	benchmarkRoutes(b, app, githubAPI)
+}
+
+func BenchmarkTwigGplusAPI(b *testing.B) {
+	app := twig.TODO()
+	loadTwigRoutes(app.Config().Register, gplusAPI)
+	benchmarkRoutes(b, app, gplusAPI)
+}
+
+func BenchmarkTwigParseAPI(b *testing.B) {
+	app := twig.TODO()
+	loadTwigRoutes(app.Config().Register, parseAPI)
+	benchmarkRoutes(b, app, parseAPI)
+}
+
+// eudore
+func loadEuodreRoutes(app *eudore.App, routes []*Route) {
+	for _, r := range routes {
+		app.RegisterHandler(r.Method, r.Path, eudoreHandler(r.Method, r.Path))
+	}
+}
+
+func eudoreHandler(method, path string) eudore.HandlerFunc {
+	return func(ctx eudore.Context) {
+		ctx.WriteString("OK")
+	}
+}
+
+func BenchmarkEudoreStatic(b *testing.B) {
+	app := eudore.NewCore()
+	loadEuodreRoutes(app.App, static)
+	benchmarkRoutes(b, app, static)
+}
+
+func BenchmarkEudoreGitHubAPI(b *testing.B) {
+	app := eudore.NewCore()
+	loadEuodreRoutes(app.App, githubAPI)
+	benchmarkRoutes(b, app, githubAPI)
+}
+
+func BenchmarkEudoreGplusAPI(b *testing.B) {
+	app := eudore.NewCore()
+	loadEuodreRoutes(app.App, gplusAPI)
+	benchmarkRoutes(b, app, gplusAPI)
+}
+
+func BenchmarkEudoreParseAPI(b *testing.B) {
+	app := eudore.NewCore()
+	loadEuodreRoutes(app.App, parseAPI)
+	benchmarkRoutes(b, app, parseAPI)
 }
