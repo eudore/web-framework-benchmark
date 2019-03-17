@@ -1,6 +1,8 @@
 package router
 
 import (
+	"os"
+	"strconv"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,6 +27,7 @@ type (
 )
 
 var (
+	num = 0
 	static = []*Route{
 		{"GET", "/"},
 		{"GET", "/cmd.html"},
@@ -518,6 +521,15 @@ var (
 	apis = [][]*Route{githubAPI, gplusAPI, parseAPI}
 )
 
+func init() {
+	str := os.Getenv("NUM")
+	if len(str) > 0 {
+		n, err := strconv.Atoi(str)
+		if err == nil {
+			num = n
+		}
+	}
+}
 
 func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 	b.ReportAllocs()
@@ -536,6 +548,13 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 
 // golf
 func loadGolfRoutes(app *golf.Application, routes []*Route) {
+	for i := 0; i<num; i++ {
+		app.Use(func(h golf.HandlerFunc) golf.HandlerFunc {
+			return func(ctx *golf.Context) {
+				h(ctx)
+			}
+		})
+	}
 	for _, r := range routes {
 		switch r.Method {
 		case "GET":
@@ -584,6 +603,13 @@ func BenchmarkGolfParseAPI(b *testing.B) {
 
 // echo
 func loadEchoRoutes(e *echo.Echo, routes []*Route) {
+	for i := 0; i<num; i++ {
+		e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+			return func(ctx echo.Context) error {
+				return h(ctx)
+			}
+		})
+	}
 	for _, r := range routes {
 		switch r.Method {
 		case "GET":
@@ -632,6 +658,9 @@ func BenchmarkEchoParseAPI(b *testing.B) {
 
 // gin
 func loadGinRoutes(g *gin.Engine, routes []*Route) {
+	for i := 0; i<num; i++ {
+		g.Use(func(*gin.Context){})
+	}
 	for _, r := range routes {
 		switch r.Method {
 		case "GET":
@@ -682,8 +711,20 @@ func BenchmarkGinParseAPI(b *testing.B) {
 	benchmarkRoutes(b, g, parseAPI)
 }
 
+
 // dotweb
+type dotwebMiddlware struct {
+	dotweb.BaseMiddlware
+}
+
+func (m *dotwebMiddlware) Handle(ctx dotweb.Context) error {
+	return m.Next(ctx)
+}
+
 func loadDotwebRoute(app *dotweb.DotWeb, routes []*Route) {
+	for i := 0; i<num; i++ {
+		app.Use(&dotwebMiddlware{})
+	}
 	router := app.HttpServer.Router()
 	for _, r := range routes {
 		router.RegisterRoute(r.Method, r.Path, dotwebHandler(r.Method, r.Path))
@@ -810,6 +851,11 @@ func BenchmarkBeegoParseAPI(b *testing.B) {
 
 // twig
 func loadTwigRoutes(app twig.Register, routes []*Route) {
+	app.Use(func(h twig.HandlerFunc) twig.HandlerFunc {
+		return func(ctx twig.Ctx) error {
+			return h(ctx)
+		}
+	})
 	for _, r := range routes {
 		app.AddHandler(r.Method, r.Path, twigHandler(r.Method, r.Path))
 	}
@@ -823,61 +869,107 @@ func twigHandler(method, path string) twig.HandlerFunc {
 
 func BenchmarkTwigStatic(b *testing.B) {
 	app := twig.TODO()
-	loadTwigRoutes(app.Config().Register, static)
+	loadTwigRoutes(app.Config(), static)
 	benchmarkRoutes(b, app, static)
 }
 
 func BenchmarkTwigGitHubAPI(b *testing.B) {
 	app := twig.TODO()
-	loadTwigRoutes(app.Config().Register, githubAPI)
+	loadTwigRoutes(app.Config(), githubAPI)
 	benchmarkRoutes(b, app, githubAPI)
 }
 
 func BenchmarkTwigGplusAPI(b *testing.B) {
 	app := twig.TODO()
-	loadTwigRoutes(app.Config().Register, gplusAPI)
+	loadTwigRoutes(app.Config(), gplusAPI)
 	benchmarkRoutes(b, app, gplusAPI)
 }
 
 func BenchmarkTwigParseAPI(b *testing.B) {
 	app := twig.TODO()
-	loadTwigRoutes(app.Config().Register, parseAPI)
+	loadTwigRoutes(app.Config(), parseAPI)
 	benchmarkRoutes(b, app, parseAPI)
 }
 
-// eudore
+// eudore radix router
+func benchmarkRoutesEudore(b *testing.B, router http.Handler, routes []*Route) {
+	b.ReportAllocs()
+	r := httptest.NewRequest("GET", "/", nil)
+	w := httptest.NewRecorder()
+
+	for i := 0; i < b.N; i++ {
+		for _, route := range routes {
+			r.Method = route.Method
+			r.RequestURI = route.Path
+			router.ServeHTTP(w, r)
+		}
+	}
+}
 func loadEuodreRoutes(app *eudore.App, routes []*Route) {
+	for i := 0; i<num; i++ {
+		app.AddMiddleware(func(eudore.Context){})
+	}
 	for _, r := range routes {
-		app.RegisterHandler(r.Method, r.Path, eudoreHandler(r.Method, r.Path))
+		app.RegisterHandler(r.Method, r.Path, eudore.HandlerFuncs{eudoreHandler(r.Method, r.Path)})
 	}
 }
 
 func eudoreHandler(method, path string) eudore.HandlerFunc {
 	return func(ctx eudore.Context) {
 		ctx.WriteString("OK")
-	}
+	} 
 }
 
-func BenchmarkEudoreStatic(b *testing.B) {
+func BenchmarkEudoreRadixStatic(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, static)
-	benchmarkRoutes(b, app, static)
+	benchmarkRoutesEudore(b, app, static)
 }
 
-func BenchmarkEudoreGitHubAPI(b *testing.B) {
+func BenchmarkEudoreRadixGitHubAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, githubAPI)
-	benchmarkRoutes(b, app, githubAPI)
+	benchmarkRoutesEudore(b, app, githubAPI)
 }
 
-func BenchmarkEudoreGplusAPI(b *testing.B) {
+func BenchmarkEudoreRadixGplusAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, gplusAPI)
-	benchmarkRoutes(b, app, gplusAPI)
+	benchmarkRoutesEudore(b, app, gplusAPI)
 }
 
-func BenchmarkEudoreParseAPI(b *testing.B) {
+func BenchmarkEudoreRadixParseAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, parseAPI)
-	benchmarkRoutes(b, app, parseAPI)
+	benchmarkRoutesEudore(b, app, parseAPI)
 }
+
+// eudore full router
+func BenchmarkEudoreFullStatic(b *testing.B) {
+	app := eudore.NewCore()
+	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	loadEuodreRoutes(app.App, static)
+	benchmarkRoutesEudore(b, app, static)
+}
+
+func BenchmarkEudoreFullGitHubAPI(b *testing.B) {
+	app := eudore.NewCore()
+	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	loadEuodreRoutes(app.App, githubAPI)
+	benchmarkRoutesEudore(b, app, githubAPI)
+}
+
+func BenchmarkEudoreFullGplusAPI(b *testing.B) {
+	app := eudore.NewCore()
+	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	loadEuodreRoutes(app.App, gplusAPI)
+	benchmarkRoutesEudore(b, app, gplusAPI)
+}
+
+func BenchmarkEudoreFullParseAPI(b *testing.B) {
+	app := eudore.NewCore()
+	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	loadEuodreRoutes(app.App, parseAPI)
+	benchmarkRoutesEudore(b, app, parseAPI)
+}
+
