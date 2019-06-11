@@ -907,7 +907,7 @@ func benchmarkRoutesEudore(b *testing.B, router http.Handler, routes []*Route) {
 }
 func loadEuodreRoutes(app *eudore.App, routes []*Route) {
 	for i := 0; i<num; i++ {
-		app.AddMiddleware(func(eudore.Context){})
+		app.AddMiddleware("ANY", "", func(eudore.Context){})
 	}
 	for _, r := range routes {
 		app.RegisterHandler(r.Method, r.Path, eudore.HandlerFuncs{eudoreHandler(r.Method, r.Path)})
