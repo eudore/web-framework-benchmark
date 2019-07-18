@@ -1,22 +1,24 @@
 package router
 
 import (
-	"os"
-	"strconv"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strconv"
 	"testing"
 
-	"github.com/dinever/golf"
-	"github.com/labstack/echo"
-	"github.com/gin-gonic/gin"
-	"github.com/devfeel/dotweb"
-	"github.com/kataras/iris"
-	iriscontext "github.com/kataras/iris/context"
 	"github.com/astaxie/beego"
 	beegocontext "github.com/astaxie/beego/context"
-	"github.com/twiglab/twig"
+	"github.com/devfeel/dotweb"
+	"github.com/dinever/golf"
+	"github.com/eudore/erouter"
 	"github.com/eudore/eudore"
+	"github.com/gin-gonic/gin"
+	"github.com/julienschmidt/httprouter"
+	"github.com/kataras/iris"
+	iriscontext "github.com/kataras/iris/context"
+	"github.com/labstack/echo"
+	"github.com/twiglab/twig"
 )
 
 type (
@@ -27,7 +29,7 @@ type (
 )
 
 var (
-	num = 0
+	num    = 0
 	static = []*Route{
 		{"GET", "/"},
 		{"GET", "/cmd.html"},
@@ -548,7 +550,7 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 
 // golf
 func loadGolfRoutes(app *golf.Application, routes []*Route) {
-	for i := 0; i<num; i++ {
+	for i := 0; i < num; i++ {
 		app.Use(func(h golf.HandlerFunc) golf.HandlerFunc {
 			return func(ctx *golf.Context) {
 				h(ctx)
@@ -603,7 +605,7 @@ func BenchmarkGolfParseAPI(b *testing.B) {
 
 // echo
 func loadEchoRoutes(e *echo.Echo, routes []*Route) {
-	for i := 0; i<num; i++ {
+	for i := 0; i < num; i++ {
 		e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
 			return func(ctx echo.Context) error {
 				return h(ctx)
@@ -658,8 +660,8 @@ func BenchmarkEchoParseAPI(b *testing.B) {
 
 // gin
 func loadGinRoutes(g *gin.Engine, routes []*Route) {
-	for i := 0; i<num; i++ {
-		g.Use(func(*gin.Context){})
+	for i := 0; i < num; i++ {
+		g.Use(func(*gin.Context) {})
 	}
 	for _, r := range routes {
 		switch r.Method {
@@ -711,7 +713,6 @@ func BenchmarkGinParseAPI(b *testing.B) {
 	benchmarkRoutes(b, g, parseAPI)
 }
 
-
 // dotweb
 type dotwebMiddlware struct {
 	dotweb.BaseMiddlware
@@ -722,7 +723,7 @@ func (m *dotwebMiddlware) Handle(ctx dotweb.Context) error {
 }
 
 func loadDotwebRoute(app *dotweb.DotWeb, routes []*Route) {
-	for i := 0; i<num; i++ {
+	for i := 0; i < num; i++ {
 		app.Use(&dotwebMiddlware{})
 	}
 	router := app.HttpServer.Router()
@@ -760,7 +761,6 @@ func BenchmarkDotwebParseAPI(b *testing.B) {
 	loadDotwebRoute(app, parseAPI)
 	benchmarkRoutes(b, app.HttpServer, parseAPI)
 }
-
 
 // iris
 func loadIrisRoutes(app *iris.Application, routes []*Route) {
@@ -862,7 +862,7 @@ func loadTwigRoutes(app twig.Register, routes []*Route) {
 }
 
 func twigHandler(method, path string) twig.HandlerFunc {
-	return	func(ctx twig.Ctx) error {
+	return func(ctx twig.Ctx) error {
 		return ctx.String(200, "OK")
 	}
 }
@@ -906,8 +906,8 @@ func benchmarkRoutesEudore(b *testing.B, router http.Handler, routes []*Route) {
 	}
 }
 func loadEuodreRoutes(app *eudore.App, routes []*Route) {
-	for i := 0; i<num; i++ {
-		app.AddMiddleware("ANY", "", func(eudore.Context){})
+	for i := 0; i < num; i++ {
+		app.AddMiddleware("ANY", "", func(eudore.Context) {})
 	}
 	for _, r := range routes {
 		app.RegisterHandler(r.Method, r.Path, eudore.HandlerFuncs{eudoreHandler(r.Method, r.Path)})
@@ -917,7 +917,7 @@ func loadEuodreRoutes(app *eudore.App, routes []*Route) {
 func eudoreHandler(method, path string) eudore.HandlerFunc {
 	return func(ctx eudore.Context) {
 		ctx.WriteString("OK")
-	} 
+	}
 }
 
 func BenchmarkEudoreRadixStatic(b *testing.B) {
@@ -973,3 +973,120 @@ func BenchmarkEudoreFullParseAPI(b *testing.B) {
 	benchmarkRoutesEudore(b, app, parseAPI)
 }
 
+// httprouter
+func loadHttprouterRoutes(g *httprouter.Router, routes []*Route) {
+	for _, r := range routes {
+		switch r.Method {
+		case "GET":
+			g.GET(r.Path, httprouterHandler(r.Method, r.Path))
+		case "POST":
+			g.POST(r.Path, httprouterHandler(r.Method, r.Path))
+		case "PATCH":
+			g.PATCH(r.Path, httprouterHandler(r.Method, r.Path))
+		case "PUT":
+			g.PUT(r.Path, httprouterHandler(r.Method, r.Path))
+		case "DELETE":
+			g.DELETE(r.Path, httprouterHandler(r.Method, r.Path))
+		}
+	}
+}
+
+func httprouterHandler(method, path string) httprouter.Handle {
+	return func(w http.ResponseWriter, req *http.Request, p httprouter.Params) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}
+}
+
+func BenchmarkHttprouterStatic(b *testing.B) {
+	router := httprouter.New()
+	loadHttprouterRoutes(router, static)
+	benchmarkRoutes(b, router, static)
+}
+
+func BenchmarkHttprouterGitHubAPI(b *testing.B) {
+	router := httprouter.New()
+	loadHttprouterRoutes(router, githubAPI)
+	benchmarkRoutes(b, router, githubAPI)
+}
+
+func BenchmarkHttprouterGplusAPI(b *testing.B) {
+	router := httprouter.New()
+	loadHttprouterRoutes(router, gplusAPI)
+	benchmarkRoutes(b, router, gplusAPI)
+}
+
+func BenchmarkHttprouterParseAPI(b *testing.B) {
+	router := httprouter.New()
+	loadHttprouterRoutes(router, parseAPI)
+	benchmarkRoutes(b, router, parseAPI)
+}
+
+// erouter
+func loadErouterRoutes(router erouter.Router, routes []*Route) {
+	for i := 0; i < num; i++ {
+		router.AddMiddleware("ANY", "", func(h erouter.Handler) erouter.Handler {
+			return func(w http.ResponseWriter, r *http.Request, p erouter.Params) {
+				h(w, r, p)
+			}
+		})
+	}
+	for _, r := range routes {
+		router.AddHandler(r.Method, r.Path, erouterHandler(r.Method, r.Path))
+	}
+}
+
+func erouterHandler(method, path string) erouter.Handler {
+	return func(w http.ResponseWriter, req *http.Request, p erouter.Params) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}
+}
+
+func BenchmarkErouterRadixStatic(b *testing.B) {
+	router := erouter.NewRouterRadix()
+	loadErouterRoutes(router, static)
+	benchmarkRoutes(b, router, static)
+}
+
+func BenchmarkErouterRadixGitHubAPI(b *testing.B) {
+	router := erouter.NewRouterRadix()
+	loadErouterRoutes(router, githubAPI)
+	benchmarkRoutes(b, router, githubAPI)
+}
+
+func BenchmarkErouterRadixGplusAPI(b *testing.B) {
+	router := erouter.NewRouterRadix()
+	loadErouterRoutes(router, gplusAPI)
+	benchmarkRoutes(b, router, gplusAPI)
+}
+
+func BenchmarkErouterRadixParseAPI(b *testing.B) {
+	router := erouter.NewRouterRadix()
+	loadErouterRoutes(router, parseAPI)
+	benchmarkRoutes(b, router, parseAPI)
+}
+
+func BenchmarkErouterFullStatic(b *testing.B) {
+	router := erouter.NewRouterFull()
+	loadErouterRoutes(router, static)
+	benchmarkRoutes(b, router, static)
+}
+
+func BenchmarkErouterFullGitHubAPI(b *testing.B) {
+	router := erouter.NewRouterFull()
+	loadErouterRoutes(router, githubAPI)
+	benchmarkRoutes(b, router, githubAPI)
+}
+
+func BenchmarkErouterFullGplusAPI(b *testing.B) {
+	router := erouter.NewRouterFull()
+	loadErouterRoutes(router, gplusAPI)
+	benchmarkRoutes(b, router, gplusAPI)
+}
+
+func BenchmarkErouterFullParseAPI(b *testing.B) {
+	router := erouter.NewRouterFull()
+	loadErouterRoutes(router, parseAPI)
+	benchmarkRoutes(b, router, parseAPI)
+}
