@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -543,6 +544,7 @@ func benchmarkRoutes(b *testing.B, router http.Handler, routes []*Route) {
 		for _, route := range routes {
 			r.Method = route.Method
 			u.Path = route.Path
+			r.URL.Path = route.Path
 			router.ServeHTTP(w, r)
 		}
 	}
@@ -662,6 +664,11 @@ func BenchmarkEchoParseAPI(b *testing.B) {
 func loadGinRoutes(g *gin.Engine, routes []*Route) {
 	for i := 0; i < num; i++ {
 		g.Use(func(*gin.Context) {})
+	}
+	if os.Getenv("SP") != "" {
+		g.Use(func(ctx *gin.Context) {
+			fmt.Println("gin path", ctx.FullPath())
+		})
 	}
 	for _, r := range routes {
 		switch r.Method {
@@ -825,6 +832,9 @@ func beegoHandler(method, path string) beego.FilterFunc {
 }
 
 func BenchmarkBeegoStatic(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	beego.SetLevel(beego.LevelEmergency)
 	app := beego.NewApp()
 	loadBeegoRoutes(app, static)
@@ -832,18 +842,27 @@ func BenchmarkBeegoStatic(b *testing.B) {
 }
 
 func BenchmarkBeegoGitHubAPI(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	app := beego.NewApp()
 	loadBeegoRoutes(app, githubAPI)
 	benchmarkRoutes(b, app.Handlers, githubAPI)
 }
 
 func BenchmarkBeegoGplusAPI(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	app := beego.NewApp()
 	loadBeegoRoutes(app, gplusAPI)
 	benchmarkRoutes(b, app.Handlers, gplusAPI)
 }
 
 func BenchmarkBeegoParseAPI(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	app := beego.NewApp()
 	loadBeegoRoutes(app, parseAPI)
 	benchmarkRoutes(b, app.Handlers, parseAPI)
@@ -892,85 +911,84 @@ func BenchmarkTwigParseAPI(b *testing.B) {
 }
 
 // eudore radix router
-func benchmarkRoutesEudore(b *testing.B, router http.Handler, routes []*Route) {
-	b.ReportAllocs()
-	r := httptest.NewRequest("GET", "/", nil)
-	w := httptest.NewRecorder()
-
-	for i := 0; i < b.N; i++ {
-		for _, route := range routes {
-			r.Method = route.Method
-			r.RequestURI = route.Path
-			router.ServeHTTP(w, r)
-		}
-	}
-}
 func loadEuodreRoutes(app *eudore.App, routes []*Route) {
 	for i := 0; i < num; i++ {
 		app.AddMiddleware("ANY", "", func(eudore.Context) {})
+	}
+	if os.Getenv("SP") != "" {
+		app.AddMiddleware("ANY", "", func(ctx eudore.Context) {
+			fmt.Println("eudore path", ctx.Path())
+		})
 	}
 	for _, r := range routes {
 		app.RegisterHandler(r.Method, r.Path, eudore.HandlerFuncs{eudoreHandler(r.Method, r.Path)})
 	}
 }
 
+var eudoreCtx = os.Getenv("EUDORECTX") == ""
+
 func eudoreHandler(method, path string) eudore.HandlerFunc {
-	return func(ctx eudore.Context) {
-		ctx.WriteString("OK")
+	if eudoreCtx {
+		return func(ctx eudore.Context) {
+			ctx.WriteString("OK")
+		}
 	}
+	return eudore.NewHandlerFunc(func(ctx eudore.ContextData) {
+		ctx.WriteString("OK")
+	})
 }
 
 func BenchmarkEudoreRadixStatic(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, static)
-	benchmarkRoutesEudore(b, app, static)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), static)
 }
 
 func BenchmarkEudoreRadixGitHubAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, githubAPI)
-	benchmarkRoutesEudore(b, app, githubAPI)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), githubAPI)
 }
 
 func BenchmarkEudoreRadixGplusAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, gplusAPI)
-	benchmarkRoutesEudore(b, app, gplusAPI)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), gplusAPI)
 }
 
 func BenchmarkEudoreRadixParseAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, parseAPI)
-	benchmarkRoutesEudore(b, app, parseAPI)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), parseAPI)
 }
 
 // eudore full router
 func BenchmarkEudoreFullStatic(b *testing.B) {
 	app := eudore.NewCore()
-	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, static)
-	benchmarkRoutesEudore(b, app, static)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), static)
 }
 
 func BenchmarkEudoreFullGitHubAPI(b *testing.B) {
 	app := eudore.NewCore()
-	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, githubAPI)
-	benchmarkRoutesEudore(b, app, githubAPI)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), githubAPI)
 }
 
 func BenchmarkEudoreFullGplusAPI(b *testing.B) {
 	app := eudore.NewCore()
-	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, gplusAPI)
-	benchmarkRoutesEudore(b, app, gplusAPI)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), gplusAPI)
 }
 
 func BenchmarkEudoreFullParseAPI(b *testing.B) {
 	app := eudore.NewCore()
-	app.RegisterComponent(eudore.ComponentRouterFullName, nil)
+	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, parseAPI)
-	benchmarkRoutesEudore(b, app, parseAPI)
+	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), parseAPI)
 }
 
 // httprouter
@@ -999,24 +1017,36 @@ func httprouterHandler(method, path string) httprouter.Handle {
 }
 
 func BenchmarkHttprouterStatic(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	router := httprouter.New()
 	loadHttprouterRoutes(router, static)
 	benchmarkRoutes(b, router, static)
 }
 
 func BenchmarkHttprouterGitHubAPI(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	router := httprouter.New()
 	loadHttprouterRoutes(router, githubAPI)
 	benchmarkRoutes(b, router, githubAPI)
 }
 
 func BenchmarkHttprouterGplusAPI(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	router := httprouter.New()
 	loadHttprouterRoutes(router, gplusAPI)
 	benchmarkRoutes(b, router, gplusAPI)
 }
 
 func BenchmarkHttprouterParseAPI(b *testing.B) {
+	if num > 0 {
+		return
+	}
 	router := httprouter.New()
 	loadHttprouterRoutes(router, parseAPI)
 	benchmarkRoutes(b, router, parseAPI)
