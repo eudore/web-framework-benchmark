@@ -14,7 +14,7 @@ go test -bench=. github.com/eudore/web-framework-benchmark
 
 ## Resule
 
-时间: 2019年8月20日
+时间: 2019年10月27日
 
 基于echo使用的[测试方法](https://github.com/vishr/web-framework-benchmark)fork ，
 
@@ -22,106 +22,56 @@ iris无法运行，会panic，测试代码已注释。
 
 ```
 [root@izj6cffbpd9lzl3tcm2csxz eudore]# go version
-go version go1.10.1 linux/amd64
+go version go1.13 linux/amd64
 [root@izj6cffbpd9lzl3tcm2csxz web-framework-benchmark]# go test -bench=. github.com/eudore/web-framework-benchmark
 goos: linux
 goarch: amd64
 pkg: github.com/eudore/web-framework-benchmark
-BenchmarkGolfStatic-2              	   50000	     39422 ns/op	    1961 B/op	     157 allocs/op
-BenchmarkGolfGitHubAPI-2           	   30000	     56541 ns/op	    2802 B/op	     203 allocs/op
-BenchmarkGolfGplusAPI-2            	  500000	      2552 ns/op	     173 B/op	      13 allocs/op
-BenchmarkGolfParseAPI-2            	  300000	      4435 ns/op	     323 B/op	      26 allocs/op
-BenchmarkEchoStatic-2              	   30000	     53307 ns/op	    2413 B/op	     157 allocs/op
-BenchmarkEchoGitHubAPI-2           	   20000	     77366 ns/op	    2496 B/op	     203 allocs/op
-BenchmarkEchoGplusAPI-2            	  300000	      4235 ns/op	     161 B/op	      13 allocs/op
-BenchmarkEchoParseAPI-2            	  200000	      7160 ns/op	     381 B/op	      26 allocs/op
-BenchmarkGinStatic-2               	   20000	     76720 ns/op	    8405 B/op	     157 allocs/op
-BenchmarkGinGitHubAPI-2            	   10000	    112871 ns/op	   10620 B/op	     203 allocs/op
-BenchmarkGinGplusAPI-2             	  200000	      6371 ns/op	     710 B/op	      13 allocs/op
-BenchmarkGinParseAPI-2             	  200000	     11692 ns/op	    1421 B/op	      26 allocs/op
-BenchmarkDotwebStatic-2            	    5000	    396412 ns/op	  100932 B/op	    2844 allocs/op
-BenchmarkDotwebGitHubAPI-2         	    3000	    543539 ns/op	  145204 B/op	    3850 allocs/op
-BenchmarkDotwebGplusAPI-2          	   50000	     33834 ns/op	    9024 B/op	     246 allocs/op
-BenchmarkDotwebParseAPI-2          	   20000	     69214 ns/op	   17341 B/op	     487 allocs/op
-BenchmarkBeegoStatic-2             	    5000	    274688 ns/op	   77514 B/op	     942 allocs/op
-BenchmarkBeegoGitHubAPI-2          	    3000	    381696 ns/op	  104917 B/op	    1222 allocs/op
-BenchmarkBeegoGplusAPI-2           	  100000	     23781 ns/op	    6437 B/op	      78 allocs/op
-BenchmarkBeegoParseAPI-2           	   30000	     40864 ns/op	   12859 B/op	     156 allocs/op
-BenchmarkTwigStatic-2              	   30000	     56564 ns/op	    3668 B/op	     157 allocs/op
-BenchmarkTwigGitHubAPI-2           	   10000	    111532 ns/op	    4122 B/op	     203 allocs/op
-BenchmarkTwigGplusAPI-2            	  300000	      4543 ns/op	     265 B/op	      13 allocs/op
-BenchmarkTwigParseAPI-2            	  200000	      8316 ns/op	     589 B/op	      26 allocs/op
-BenchmarkEudoreRadixStatic-2       	   20000	     77580 ns/op	     872 B/op	       0 allocs/op
-BenchmarkEudoreRadixGitHubAPI-2    	   10000	    119841 ns/op	     895 B/op	       0 allocs/op
-BenchmarkEudoreRadixGplusAPI-2     	  300000	      5837 ns/op	      57 B/op	       0 allocs/op
-BenchmarkEudoreRadixParseAPI-2     	  200000	     10479 ns/op	     173 B/op	       0 allocs/op
-BenchmarkEudoreFullStatic-2        	   20000	     76923 ns/op	     872 B/op	       0 allocs/op
-BenchmarkEudoreFullGitHubAPI-2     	   10000	    112567 ns/op	     899 B/op	       0 allocs/op
-BenchmarkEudoreFullGplusAPI-2      	  300000	      5623 ns/op	      57 B/op	       0 allocs/op
-BenchmarkEudoreFullParseAPI-2      	  200000	     10473 ns/op	     173 B/op	       0 allocs/op
-BenchmarkHttprouterStatic-2        	   50000	     24124 ns/op	    1949 B/op	     157 allocs/op
-BenchmarkHttprouterGitHubAPI-2     	   30000	     55458 ns/op	   16571 B/op	     370 allocs/op
-BenchmarkHttprouterGplusAPI-2      	  500000	      2552 ns/op	     813 B/op	      24 allocs/op
-BenchmarkHttprouterParseAPI-2      	  500000	      3791 ns/op	     986 B/op	      42 allocs/op
-BenchmarkErouterRadixStatic-2      	   30000	     43719 ns/op	    2412 B/op	     157 allocs/op
-BenchmarkErouterRadixGitHubAPI-2   	   20000	     61982 ns/op	    2501 B/op	     203 allocs/op
-BenchmarkErouterRadixGplusAPI-2    	  500000	      2534 ns/op	     173 B/op	      13 allocs/op
-BenchmarkErouterRadixParseAPI-2    	  300000	      4590 ns/op	     323 B/op	      26 allocs/op
-BenchmarkErouterFullStatic-2       	   30000	     44715 ns/op	    2413 B/op	     157 allocs/op
-BenchmarkErouterFullGitHubAPI-2    	   20000	     63466 ns/op	    2503 B/op	     203 allocs/op
-BenchmarkErouterFullGplusAPI-2     	  500000	      2575 ns/op	     173 B/op	      13 allocs/op
-BenchmarkErouterFullParseAPI-2     	  300000	      4608 ns/op	     323 B/op	      26 allocs/op
+BenchmarkGolfStatic-2              	   30208	     44498 ns/op	    2424 B/op	     157 allocs/op
+BenchmarkGolfGitHubAPI-2           	   17150	     72195 ns/op	    2676 B/op	     204 allocs/op
+BenchmarkGolfGplusAPI-2            	  406230	      2833 ns/op	     189 B/op	      13 allocs/op
+BenchmarkGolfParseAPI-2            	  235088	      5087 ns/op	     355 B/op	      26 allocs/op
+BenchmarkEchoStatic-2              	   22947	     53032 ns/op	    2015 B/op	     157 allocs/op
+BenchmarkEchoGitHubAPI-2           	   16620	     71640 ns/op	    2673 B/op	     203 allocs/op
+BenchmarkEchoGplusAPI-2            	  307123	      3983 ns/op	     160 B/op	      13 allocs/op
+BenchmarkEchoParseAPI-2            	  174658	      7029 ns/op	     406 B/op	      26 allocs/op
+BenchmarkGinStatic-2               	   14479	     78531 ns/op	    8736 B/op	     157 allocs/op
+BenchmarkGinGitHubAPI-2            	   10000	    114445 ns/op	   10620 B/op	     203 allocs/op
+BenchmarkGinGplusAPI-2             	  189676	      6625 ns/op	     715 B/op	      13 allocs/op
+BenchmarkGinParseAPI-2             	  102295	     12541 ns/op	    1417 B/op	      26 allocs/op
+BenchmarkDotwebStatic-2            	    3458	    366361 ns/op	  101343 B/op	    2838 allocs/op
+BenchmarkDotwebGitHubAPI-2         	    2470	    551926 ns/op	  144047 B/op	    3837 allocs/op
+BenchmarkDotwebGplusAPI-2          	   37876	     35167 ns/op	    8981 B/op	     246 allocs/op
+BenchmarkDotwebParseAPI-2          	   17848	     62844 ns/op	   17320 B/op	     485 allocs/op
+BenchmarkBeegoStatic-2             	    4576	    257102 ns/op	   76660 B/op	    1099 allocs/op
+BenchmarkBeegoGitHubAPI-2          	    3243	    368925 ns/op	   99363 B/op	    1423 allocs/op
+BenchmarkBeegoGplusAPI-2           	   57676	     21200 ns/op	    6343 B/op	      91 allocs/op
+BenchmarkBeegoParseAPI-2           	   28618	     39455 ns/op	   12688 B/op	     182 allocs/op
+BenchmarkTwigStatic-2              	   20112	     59085 ns/op	    3376 B/op	     157 allocs/op
+BenchmarkTwigGitHubAPI-2           	   13903	     85844 ns/op	    4499 B/op	     203 allocs/op
+BenchmarkTwigGplusAPI-2            	  267199	      5004 ns/op	     272 B/op	      13 allocs/op
+BenchmarkTwigParseAPI-2            	  143353	      8440 ns/op	     536 B/op	      26 allocs/op
+BenchmarkEudoreRadixStatic-2       	   22930	     61829 ns/op	    2018 B/op	     157 allocs/op
+BenchmarkEudoreRadixGitHubAPI-2    	   13875	     83999 ns/op	    2895 B/op	     203 allocs/op
+BenchmarkEudoreRadixGplusAPI-2     	  289152	      4076 ns/op	     164 B/op	      13 allocs/op
+BenchmarkEudoreRadixParseAPI-2     	  134761	      7574 ns/op	     336 B/op	      26 allocs/op
+BenchmarkEudoreFullStatic-2        	   22110	     55446 ns/op	    2046 B/op	     157 allocs/op
+BenchmarkEudoreFullGitHubAPI-2     	   13608	     90673 ns/op	    2920 B/op	     203 allocs/op
+BenchmarkEudoreFullGplusAPI-2      	  261680	      4185 ns/op	     170 B/op	      13 allocs/op
+BenchmarkEudoreFullParseAPI-2      	  160928	      7761 ns/op	     315 B/op	      26 allocs/op
+BenchmarkHttprouterStatic-2        	   58454	     20522 ns/op	    1498 B/op	     157 allocs/op
+BenchmarkHttprouterGitHubAPI-2     	   23164	     51439 ns/op	   15694 B/op	     370 allocs/op
+BenchmarkHttprouterGplusAPI-2      	  525870	      2425 ns/op	     731 B/op	      24 allocs/op
+BenchmarkHttprouterParseAPI-2      	  338446	      3789 ns/op	     896 B/op	      42 allocs/op
+BenchmarkErouterRadixStatic-2      	   37615	     32547 ns/op	    1237 B/op	     157 allocs/op
+BenchmarkErouterRadixGitHubAPI-2   	   23498	     54143 ns/op	    1889 B/op	     203 allocs/op
+BenchmarkErouterRadixGplusAPI-2    	  521916	      2263 ns/op	      92 B/op	      13 allocs/op
+BenchmarkErouterRadixParseAPI-2    	  299391	      3961 ns/op	     167 B/op	      26 allocs/op
+BenchmarkErouterFullStatic-2       	   33639	     31997 ns/op	    1346 B/op	     157 allocs/op
+BenchmarkErouterFullGitHubAPI-2    	   21007	     58242 ns/op	    1243 B/op	     203 allocs/op
+BenchmarkErouterFullGplusAPI-2     	  553612	      2199 ns/op	      88 B/op	      13 allocs/op
+BenchmarkErouterFullParseAPI-2     	  297276	      4070 ns/op	     168 B/op	      26 allocs/op
 PASS
-ok  	github.com/eudore/web-framework-benchmark	78.223s
-[root@izj6cffbpd9lzl3tcm2csxz web-framework-benchmark]# NUM=20 go test -bench=. github.com/eudore/web-framework-benchmark
-goos: linux
-goarch: amd64
-pkg: github.com/eudore/web-framework-benchmark
-BenchmarkGolfStatic-2              	   20000	     71483 ns/op	    2156 B/op	     158 allocs/op
-BenchmarkGolfGitHubAPI-2           	   20000	    101679 ns/op	    2526 B/op	     203 allocs/op
-BenchmarkGolfGplusAPI-2            	  300000	      5082 ns/op	     161 B/op	      13 allocs/op
-BenchmarkGolfParseAPI-2            	  200000	      9094 ns/op	     381 B/op	      26 allocs/op
-BenchmarkEchoStatic-2              	   10000	    213412 ns/op	   52376 B/op	    3297 allocs/op
-BenchmarkEchoGitHubAPI-2           	    5000	    320824 ns/op	   67483 B/op	    4263 allocs/op
-BenchmarkEchoGplusAPI-2            	  100000	     17658 ns/op	    4351 B/op	     273 allocs/op
-BenchmarkEchoParseAPI-2            	   50000	     34476 ns/op	    8702 B/op	     546 allocs/op
-BenchmarkGinStatic-2               	   20000	     99110 ns/op	    8406 B/op	     157 allocs/op
-BenchmarkGinGitHubAPI-2            	   10000	    143052 ns/op	   10624 B/op	     203 allocs/op
-BenchmarkGinGplusAPI-2             	  200000	      7677 ns/op	     710 B/op	      13 allocs/op
-BenchmarkGinParseAPI-2             	  100000	     14407 ns/op	    1421 B/op	      26 allocs/op
-BenchmarkDotwebStatic-2            	    3000	    403247 ns/op	  101168 B/op	    2848 allocs/op
-BenchmarkDotwebGitHubAPI-2         	    2000	    596129 ns/op	  144462 B/op	    3847 allocs/op
-BenchmarkDotwebGplusAPI-2          	   50000	     32538 ns/op	    9019 B/op	     246 allocs/op
-BenchmarkDotwebParseAPI-2          	   20000	     71272 ns/op	   17397 B/op	     487 allocs/op
-BenchmarkBeegoStatic-2             	2000000000	         0.00 ns/op
-BenchmarkBeegoGitHubAPI-2          	2000000000	         0.00 ns/op
-BenchmarkBeegoGplusAPI-2           	2000000000	         0.00 ns/op
-BenchmarkBeegoParseAPI-2           	2000000000	         0.00 ns/op
-BenchmarkTwigStatic-2              	   20000	     60292 ns/op	    3380 B/op	     157 allocs/op
-BenchmarkTwigGitHubAPI-2           	   20000	     90945 ns/op	    4118 B/op	     203 allocs/op
-BenchmarkTwigGplusAPI-2            	  300000	      4542 ns/op	     265 B/op	      13 allocs/op
-BenchmarkTwigParseAPI-2            	  200000	      8564 ns/op	     589 B/op	      26 allocs/op
-BenchmarkEudoreRadixStatic-2       	   20000	     76629 ns/op	     877 B/op	       0 allocs/op
-BenchmarkEudoreRadixGitHubAPI-2    	   10000	    116052 ns/op	     905 B/op	       0 allocs/op
-BenchmarkEudoreRadixGplusAPI-2     	  200000	      5686 ns/op	      86 B/op	       0 allocs/op
-BenchmarkEudoreRadixParseAPI-2     	  200000	     11904 ns/op	     173 B/op	       0 allocs/op
-BenchmarkEudoreFullStatic-2        	   20000	     74043 ns/op	     875 B/op	       0 allocs/op
-BenchmarkEudoreFullGitHubAPI-2     	   10000	    113976 ns/op	     904 B/op	       0 allocs/op
-BenchmarkEudoreFullGplusAPI-2      	  200000	      5645 ns/op	      86 B/op	       0 allocs/op
-BenchmarkEudoreFullParseAPI-2      	  200000	     10915 ns/op	     173 B/op	       0 allocs/op
-BenchmarkHttprouterStatic-2        	2000000000	         0.00 ns/op
-BenchmarkHttprouterGitHubAPI-2     	2000000000	         0.00 ns/op
-BenchmarkHttprouterGplusAPI-2      	2000000000	         0.00 ns/op
-BenchmarkHttprouterParseAPI-2      	2000000000	         0.00 ns/op
-BenchmarkErouterRadixStatic-2      	   20000	     71185 ns/op	    2130 B/op	     157 allocs/op
-BenchmarkErouterRadixGitHubAPI-2   	   20000	     96114 ns/op	    2505 B/op	     203 allocs/op
-BenchmarkErouterRadixGplusAPI-2    	  300000	      4786 ns/op	     161 B/op	      13 allocs/op
-BenchmarkErouterRadixParseAPI-2    	  200000	      8808 ns/op	     381 B/op	      26 allocs/op
-BenchmarkErouterFullStatic-2       	   20000	     65147 ns/op	    2131 B/op	     157 allocs/op
-BenchmarkErouterFullGitHubAPI-2    	   10000	    105393 ns/op	    2526 B/op	     204 allocs/op
-BenchmarkErouterFullGplusAPI-2     	  300000	      4490 ns/op	     161 B/op	      13 allocs/op
-BenchmarkErouterFullParseAPI-2     	  200000	      9109 ns/op	     381 B/op	      26 allocs/op
-PASS
-ok  	github.com/eudore/web-framework-benchmark	68.610s
+ok  	github.com/eudore/web-framework-benchmark	69.344s
 ```
 

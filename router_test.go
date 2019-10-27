@@ -16,8 +16,8 @@ import (
 	"github.com/eudore/eudore"
 	"github.com/gin-gonic/gin"
 	"github.com/julienschmidt/httprouter"
-	"github.com/kataras/iris"
-	iriscontext "github.com/kataras/iris/context"
+//	"github.com/kataras/iris"
+//	iriscontext "github.com/kataras/iris/context"
 	"github.com/labstack/echo"
 	"github.com/twiglab/twig"
 )
@@ -770,6 +770,7 @@ func BenchmarkDotwebParseAPI(b *testing.B) {
 }
 
 // iris
+/*
 func loadIrisRoutes(app *iris.Application, routes []*Route) {
 	for _, r := range routes {
 		app.Handle(r.Method, r.Path, irisHandler(r.Method, r.Path))
@@ -782,7 +783,6 @@ func irisHandler(method, path string) iriscontext.Handler {
 	}
 }
 
-/*
 func BenchmarkIrisStatic(b *testing.B) {
 	app := iris.Default()
 	loadIrisRoutes(app, static)
@@ -913,10 +913,10 @@ func BenchmarkTwigParseAPI(b *testing.B) {
 // eudore radix router
 func loadEuodreRoutes(app *eudore.App, routes []*Route) {
 	for i := 0; i < num; i++ {
-		app.AddMiddleware("ANY", "", func(eudore.Context) {})
+		app.AddMiddleware(func(eudore.Context) {})
 	}
 	if os.Getenv("SP") != "" {
-		app.AddMiddleware("ANY", "", func(ctx eudore.Context) {
+		app.AddMiddleware(func(ctx eudore.Context) {
 			fmt.Println("eudore path", ctx.Path())
 		})
 	}
@@ -941,25 +941,25 @@ func eudoreHandler(method, path string) eudore.HandlerFunc {
 func BenchmarkEudoreRadixStatic(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, static)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), static)
+	benchmarkRoutes(b, app, static)
 }
 
 func BenchmarkEudoreRadixGitHubAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, githubAPI)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), githubAPI)
+	benchmarkRoutes(b, app, githubAPI)
 }
 
 func BenchmarkEudoreRadixGplusAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, gplusAPI)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), gplusAPI)
+	benchmarkRoutes(b, app, gplusAPI)
 }
 
 func BenchmarkEudoreRadixParseAPI(b *testing.B) {
 	app := eudore.NewCore()
 	loadEuodreRoutes(app.App, parseAPI)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), parseAPI)
+	benchmarkRoutes(b, app, parseAPI)
 }
 
 // eudore full router
@@ -967,28 +967,28 @@ func BenchmarkEudoreFullStatic(b *testing.B) {
 	app := eudore.NewCore()
 	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, static)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), static)
+	benchmarkRoutes(b, app, static)
 }
 
 func BenchmarkEudoreFullGitHubAPI(b *testing.B) {
 	app := eudore.NewCore()
 	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, githubAPI)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), githubAPI)
+	benchmarkRoutes(b, app, githubAPI)
 }
 
 func BenchmarkEudoreFullGplusAPI(b *testing.B) {
 	app := eudore.NewCore()
 	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, gplusAPI)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), gplusAPI)
+	benchmarkRoutes(b, app, gplusAPI)
 }
 
 func BenchmarkEudoreFullParseAPI(b *testing.B) {
 	app := eudore.NewCore()
 	app.Router = eudore.NewRouterFull()
 	loadEuodreRoutes(app.App, parseAPI)
-	benchmarkRoutes(b, eudore.GetNetHttpHandler(nil, app), parseAPI)
+	benchmarkRoutes(b, app, parseAPI)
 }
 
 // httprouter
