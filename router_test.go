@@ -16,8 +16,8 @@ import (
 	"github.com/eudore/eudore"
 	"github.com/gin-gonic/gin"
 	"github.com/julienschmidt/httprouter"
-//	"github.com/kataras/iris"
-//	iriscontext "github.com/kataras/iris/context"
+	//	"github.com/kataras/iris"
+	//	iriscontext "github.com/kataras/iris/context"
 	"github.com/labstack/echo"
 	"github.com/twiglab/twig"
 )
@@ -921,21 +921,21 @@ func loadEuodreRoutes(app *eudore.App, routes []*Route) {
 		})
 	}
 	for _, r := range routes {
-		app.RegisterHandler(r.Method, r.Path, eudore.HandlerFuncs{eudoreHandler(r.Method, r.Path)})
+		app.AddHandler(r.Method, r.Path, eudoreHandler(r.Method, r.Path))
 	}
 }
 
 var eudoreCtx = os.Getenv("EUDORECTX") == ""
 
-func eudoreHandler(method, path string) eudore.HandlerFunc {
+func eudoreHandler(method, path string) interface{} {
 	if eudoreCtx {
 		return func(ctx eudore.Context) {
 			ctx.WriteString("OK")
 		}
 	}
-	return eudore.NewHandlerFunc(func(ctx eudore.ContextData) {
+	return func(ctx eudore.ContextData) {
 		ctx.WriteString("OK")
-	})
+	}
 }
 
 func BenchmarkEudoreRadixStatic(b *testing.B) {
